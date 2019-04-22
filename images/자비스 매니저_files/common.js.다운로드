@@ -1,0 +1,380 @@
+// datatable 기본 설정
+$.extend($.fn.dataTable.defaults, {
+    autoWidth: false,
+    dom: '<"datatable-header"><"datatable-scroll"t><"datatable-footer"lip>',
+    language: {
+        "url": "/json/datatables/language/ko.json"
+    }
+});
+
+// datatable 컬럼 필터링을 위한 세팅
+/**
+ * @param {Object} obj (selectId, tableId, hideDataNameArray, filterCallback, showColumnMinCnt)
+ *      {String} selectId - select element id
+ *      {String} tableId - datatable id
+ *      {Array} hideDataNameArray - 숨겨야 할 컬럼 데이터 array (없다면 [])
+ *      {function} filterCallback - select2 등 datatable이 draw된 후에 특정 작업이 필요한 경우 필터 처리 후 콜백 함수로 지정 (없다면 null)
+ *      {int} showColumnMinCnt - 최소한 보여야 할 보기항목 수 지정 (없다면 0)
+ */
+// select element id, datatable element id, 숨겨야 할 컬럼 데이터 array (없다면 [])
+function setDtFilteringColumnMultiSelect(obj) {
+    var selectId = obj.selectId;
+    var tableId = obj.tableId;
+    var hideDataNameArray = obj.hideDataNameArray;
+    var filterCallback = obj.filterCallback;
+    var showColumnMinCnt = obj.showColumnMinCnt;
+
+    var cookieArray = [];
+    var headerDataObject = {};
+    var headerTextArray = [];
+    var multiselectHideIndexArray = []; //멀티셀렉트 리스트에서 숨김처리해야하는 인덱스 리스트
+
+    // 쿠키 조회
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    };
+
+    // 컬럼 필터링 처리
+    function filteringColumns(selectId, tableId, filterCallback) {
+        var selectColumns = [];
+        var selectColumnNames = [];
+
+        var dtColumns = $('#' + tableId).DataTable().columns()[0];
+
+        var selectEl = $('#'+ selectId +' option:selected');
+
+        for(var i = 0; i < selectEl.length; i++) {
+            var targetVal = parseInt($(selectEl[i]).val());
+            selectColumns.push(targetVal);
+            selectColumnNames.push(headerDataObject[targetVal].name);
+        }
+
+        $.each(dtColumns, function(index, value) {
+            var column = $('#' + tableId).DataTable().column(value);
+            if(selectColumns.indexOf(value) != -1) {
+                column.visible(true);
+            } else {
+                column.visible(false);
+            }
+        });
+
+        // 쿠키 생성
+        document.cookie = "custom_column_" + tableId + "=" + selectColumnNames;
+
+        // callback
+        if(filterCallback != null) {
+            filterCallback();
+        }
+    };
+
+    $.each($('#' + tableId + ' thead tr')[0].cells, function(index, value) {
+        headerDataObject[index] = {
+            name: $(value).data('name'),
+            text: $(value).text()
+        };
+
+        headerTextArray.push($(value).data('name'));
+    });
+
+    // init multiselect
+    if(getCookie("custom_column_" + tableId).length > 0) { // 생성된 쿠키가 있다면
+        cookieArray = getCookie("custom_column_" + tableId).split(',');
+
+        //쿠키값을 체크해서 헤더값과 매칭되지 않으면 쿠키 초기화
+        for(var i = 0; i < cookieArray.length; i++) {
+            if(headerTextArray.indexOf(cookieArray[i]) == -1) {
+                cookieArray = [];
+                break;
+            }
+        }
+    }
+
+    // select option 세팅
+    $.each(headerDataObject, function(index, value) {
+        var selectedVal = '';
+        if(hideDataNameArray.indexOf(value.name) == -1) {
+            if(cookieArray.length == 0 || (cookieArray.length > 0 && cookieArray.indexOf(value.name) != -1)) {
+                selectedVal = 'selected';
+            }
+        } else {
+            multiselectHideIndexArray.push(parseInt(index));
+        }
+
+        if(value.text == 0) {
+            multiselectHideIndexArray.push(parseInt(index));
+            selectedVal = 'selected';
+        }
+        $('#' + selectId).append('<option value="'+ index +'" '+ selectedVal +' style="display: none">'+ value.text +'</option>');
+    });
+
+    // multiselect 생성
+    $('#' + selectId).multiselect({
+        onInitialized: function(select, container) {
+            $.each($('#' + selectId).next().find('.multiselect-container li'), function(index, value) {
+                if(multiselectHideIndexArray.indexOf(index) != -1) {
+                    $(value).hide();
+                }
+            });
+            filteringColumns(selectId, tableId, filterCallback);
+        },
+        onChange: function(option, checked, select) {
+            if(hideDataNameArray.indexOf(option[0].index) == -1) {
+                if(!checked && $('#' + selectId).next().find('.multiselect-container li.active:visible').length < showColumnMinCnt) {
+                    $('#'+selectId).multiselect('select',option[0].index+'',true);
+                    alert('보기 항목은 최소 ' + showColumnMinCnt + '개 이상 선택해야 합니다.');
+                }
+            }
+            filteringColumns(selectId, tableId, filterCallback);
+        },
+        includeSelectAllOption: false, //모든옵션 선택
+        buttonText: function(options, select) {
+            return '보기 설정';
+        }
+    });
+}
+
+function getNumberValue(value){
+    var sign=value.substr(0,1);
+    if(sign!='-') {
+        return value.replace(/[($)\s\._,\-]+/g, '');
+    }else{
+        return '-'+value.substr(1).replace(/[($)\s\._,\-]+/g, '');
+    }
+}
+/**
+ * Common - <input type="text" class="reg_no_formatter/>에 Reg_No_format 자동지정 function.
+ * @param null
+ * @returns {*}
+ */
+
+function setRegNoFormatter(){
+    $('.reg_no_formatter').on("keyup", function (event) {
+        // When user select text in the document, also abort.
+        var selection = window.getSelection().toString();
+        if (selection !== '') {
+            return;
+        }
+        // When the arrow keys are pressed, abort.
+        if ($.inArray(event.keyCode, [38, 40, 37, 39]) !== -1) {
+            return;
+        }
+        var $this = $(this);
+
+        // Get the value.
+        var input = $this.val();
+        if(!checkRegNo(input)){
+            $this.css("color","red");
+        }else{
+            $this.css("color","black");
+        }
+        if(input.length<7){
+            input = input.replace(/[\D\s\._\-]+/g, "");
+
+            $this.val(function () {
+                return input;
+            });
+        }else{
+            input = input.replace(/[\D\s\._\-]+/g, "");
+            var birth=input.substring(0,6);
+            var another=input.substring(6);
+            $this.val(function () {
+                return birth+'-'+another;
+            });
+        }
+    });
+}
+
+function checkRegNo(regno) {
+    if (!regno) {
+        return false;
+    }
+    var whiteSpaceRegNo = replaceAll(regno, " ", "");
+    var regNoId = replaceAll(whiteSpaceRegNo, '-', '');
+    if (!regNoId || isNaN(regNoId) || regNoId.length != 13) {
+        return false;
+    }
+    var month = parseInt(regNoId.substring(2, 4));
+    var day = parseInt(regNoId.substring(4, 6));
+    if (month < 1 || month > 12 || day == 0) {
+        return false;
+    } else {
+        if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
+            if (day > 31) {
+                return false;
+            }
+        } else if (month == 2) {
+            if (day > 29) {
+                return false;
+            }
+        } else {
+            if (day > 30) {
+                return false;
+            }
+        }
+    }
+    return checkRegNoFlag(regNoId);
+}
+function checkRegNoFlag(regNo){
+    var MAX_INDEX=12;
+    var VALIDATE_STRING="234567892345";
+    var total=0;
+    for(var index=0;index<MAX_INDEX;index++){
+        //alert(regNo.charAt(index));
+        total+=parseInt(regNo.charAt(index))*parseInt(VALIDATE_STRING.charAt(index));
+    }
+    var REG_NO_SEX_INDEX=6;
+    var REG_NO_SEX_CHAR=regNo.charAt(REG_NO_SEX_INDEX);
+    if(REG_NO_SEX_CHAR=='5'||REG_NO_SEX_CHAR=='6'||REG_NO_SEX_CHAR=='7'||REG_NO_SEX_CHAR=='8'){
+        var flag=(13-total%11)%10;
+    }else{
+        var flag=(11-total%11)%10;
+    }
+    return (flag==parseInt(regNo.charAt(MAX_INDEX)));
+}
+/**
+ * Common - <input type="text" class="number_formatter/>에 Number_format 자동지정 function.
+ * @param null
+ * @returns {*}
+ */
+
+function setNumberFormatter(){
+    $('.number_formatter').on("keyup", function (event) {
+        // When user select text in the document, also abort.
+        var selection = window.getSelection().toString();
+        if (selection !== '') {
+            return;
+        }
+        // When the arrow keys are pressed, abort.
+        if ($.inArray(event.keyCode, [38, 40, 37, 39]) !== -1) {
+            return;
+        }
+        var $this = $(this);
+        // Get the value.
+        var input = $this.val();
+        var sign=input.substr(0,1);
+        if(sign!='-'){
+            var input = input.replace(/[\D\s\._\-]+/g, "");
+            input = input ? parseInt(input, 10) : 0;
+
+            $this.val(function () {
+                return ( input === 0 ) ? "0" : input.toLocaleString("en-US");
+            });
+        }else{
+            var input = sign+input.substr(1).replace(/[\D\s\._\-]+/g, "");
+            if(input.length!=1) {
+                input = input ? parseInt(input, 10) : 0;
+            }
+            $this.val(function () {
+                return ( input === 0 ) ? "0" : input.toLocaleString("en-US");
+            });
+        }
+    });
+}
+
+function openNewTab(url){
+    if (url.indexOf('?') !== -1) {
+        url += '&';
+    }else{
+        url += '?';
+    }
+    url += 't_idx='+t_idx;
+    openInNewTab(url);
+}
+
+function openInNewTab(url) {
+    var win = window.open(url, '_blank');
+    win.focus();
+}
+
+// 배경전체에 깔리는 블록이 있는 스피너 처리를 위한 세팅값
+// ex) target.block(getBlockSpinnerData());
+function getBlockSpinnerData(message) {
+    var blockMessage = '정보를 불러오는 중입니다...';
+    if(message != undefined) {
+        blockMessage = message;
+    }
+
+    var media = "screen and (max-width: 768px)";
+    var top = null;
+
+    // 모바일 사이즈일때
+    // (모바일 사이즈 여부에 상관없이) (모달 open) 모달 크기가 window.innerHeight 보다 클 때
+    // (모바일 사이즈 여부에 상관없이) (모달 not open) content-wrapper의 크기가 window.innerHeight 보다 클 때
+    if (
+        window.matchMedia(media).matches ||
+        (window.innerHeight < $('.modal:visible .modal-content').innerHeight()) ||
+        (($('.content-wrapper').innerHeight() > window.innerHeight) && $('.modal:visible').length == 0)
+    ) { top = (window.outerHeight / 100) * 40; }
+
+    var returnVal = {
+        message: '<i class="icon-spinner4 spinner"></i><p class="mt-20"><strong>' + blockMessage + '</strong></p>',
+        overlayCSS: {
+            cursor: 'wait',
+            opacity: '0.5', //modal block과 색을 맞추기 위해
+            zIndex: '10000',
+        },
+        css: {
+            paddingTop: 20,
+            paddingBottom: 10,
+            paddingLeft: 25,
+            paddingRight: 25,
+            border: 'none',
+            color: '#788598',
+            width: 'auto',
+            boxShadow: '2px 4px 16px rgba(161, 168, 178, .25)',
+            borderRadius: '4px',
+            zIndex: '10001'
+        }
+    };
+
+    if(top != null) {
+        returnVal.centerY = false; //top 값을 직접 지정하기 위한 세팅
+        returnVal.css.top = top + 'px';
+    }
+
+    return returnVal;
+};
+
+// 배경전체에 깔리는 블록이 없는 스피너 처리를 위한 세팅값
+// ex) target.block(getNonBlockSpinnerData());
+function getNonBlockSpinnerData(message) {
+    var blockSpinnerData = getBlockSpinnerData(message);
+    //블록 없애기
+    blockSpinnerData.overlayCSS = {
+        backgroundColor: 'transaction',
+            cursor: 'wait',
+            width: 'inherit',
+            height: 'inherit',
+            zIndex: '10000'
+    };
+
+    return blockSpinnerData;
+};
+
+// body를 타겟으로 투명 block 깔기
+function openTransparentBlockUI() {
+    $('body').block({
+        message: null,
+        overlayCSS: {
+            backgroundColor:'transparent',
+            zIndex: '10000'
+        }
+    });
+};
+
+// body를 타겟으로 깔린 block 닫기
+function closeTransparentBlockUI() {
+    $('body').unblock();
+};

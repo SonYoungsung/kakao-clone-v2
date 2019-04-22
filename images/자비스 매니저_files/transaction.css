@@ -1,0 +1,280 @@
+table th.min-width-xl {
+    min-width: 200px;
+}
+
+table th.min-width-lg {
+    min-width: 150px;
+}
+
+table th.min-width-md {
+    min-width: 130px;
+}
+
+table th.min-width-sm {
+    min-width: 115px;
+}
+
+table th.min-width-xs {
+    min-width: 100px;
+}
+
+table th.min-width-xxs {
+    min-width: 100px;
+}
+
+table th.min-width-xxxs {
+    min-width: 70px;
+}
+
+table .customer-memo {
+    line-height: 1.5;
+}
+
+#select2-select_category-container {
+    padding: 1px 28px 0 12px;
+    color: #4a90e2;
+}
+
+.select2-container--open .select2-dropdown--above {
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+#btn_proof i {
+    padding-left: 4px;
+}
+
+#btn_proof i.icon-checkbox-unchecked {
+    color: #ccc;
+}
+
+#btn_proof i.icon-checkbox-checked {
+    color: #4a90e2;
+}
+
+.dataTable .btn-required,
+.dataTable .select2-selection--single .select2-selection__placeholder {
+    font-size: 13px;
+    color: #4a90e2;
+}
+
+.dataTable .btn-required:hover,
+.dataTable .btn-required:focus {
+    color: #4a90e2;
+}
+
+.table .btn-default:hover,
+.table .btn-default:focus {
+    box-shadow: none;
+    background: transparent;
+    border: none;
+    color: #4a90e2;
+}
+
+.table .select2 .btn-verify.question span.select2-selection__placeholder::before {
+    color: inherit;
+}
+
+.dataTable td.text-primary {
+    color: #4a90e2 !important;
+}
+
+.dataTable td.text-danger {
+    color: #e34a5c !important;
+}
+
+.dataTable .icon-file-text2 {
+    color: #788598;
+}
+
+.dataTable .icon-file-text2:hover {
+    color: #4a90e2;
+}
+
+.dataTable > thead > tr > th {
+    padding: 10px;
+    text-align: left;
+    color: #333 !important;
+}
+
+.dataTable > tbody > tr > td {
+    padding: 0 10px;
+}
+
+.dataTable thead .sorting:after,
+.dataTable thead .sorting:before,
+.dataTable thead .sorting_asc:after,
+.dataTable thead .sorting_asc_disabled:after,
+.dataTable thead .sorting_desc:after,
+.dataTable thead .sorting_desc_disabled:after {
+    right: 10px;
+}
+
+.panel-heading .form-inline .form-group + .form-group {
+    margin-left: 0;
+}
+
+body.dropdown-borderless span.select2-dropdown.select2-dropdown--below {
+    min-width: 140px !important;
+}
+
+#table_bank_desc_manage.dataTable > tbody > tr > td {
+    line-height: 46px;
+}
+
+.panel-transaction .panel-heading #area_search {
+    padding: 10px 0px;
+}
+
+.panel-transaction .panel-heading #area_action {
+    background-color: #f8f8f8;
+    padding: 10px 12px;
+}
+
+.panel-transaction .panel-heading #area_action label {
+    color: #788598;
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+.panel-transaction .panel-heading #area_action .select2-selection--single:not([class*=bg-]) {
+    background-color: transparent;
+}
+
+.content-wrapper.transaction-index-wrapper .dataTable > tbody > tr > td,
+#modal_summary_transaction .dataTable > tbody > tr > td {
+    line-height: 36px;
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper .form-upload-excel-hw {
+    font-size: 15px;
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper .form-upload-excel-hw .select2-selection--single:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper #table_result > thead > tr > th:first-child {
+    padding-left: 20px;
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper #table_result > thead > tr > th:last-child {
+    padding-right: 0px;
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper #table_result > thead > tr > th {
+    padding: 10px;
+    border-top: 1px solid #bbb
+}
+
+.content-wrapper.transaction-bank-desc-wrapper .dataTable > tbody > tr > td {
+    line-height: 46px;
+}
+
+.content-wrapper.transaction-bank-desc-wrapper .btn-select-client,
+.content-wrapper.transaction-bank-desc-wrapper .btn-select-client:active,
+.content-wrapper.transaction-bank-desc-wrapper .btn-select-client:focus,
+.content-wrapper.transaction-bank-desc-wrapper .btn-select-client:hover {
+    text-align: left;
+    background-color: #fff;
+}
+
+.content-wrapper.transaction-bank-desc-wrapper .btn-select-client:after {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    display: inline-block;
+    width: 16px;
+    margin-top: -8px;
+    font-family: Icomoon;
+    font-size: 16px;
+    line-height: 1;
+    color: inherit;
+    text-align: right;
+    content: '\e9c5';
+    -webkit-font-smoothing: antialiased;
+}
+
+.content-wrapper.transaction-bank-desc-wrapper .btn-select-client,
+.content-wrapper.transaction-bank-desc-wrapper .select2 {
+    min-width: 200px;
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper .form-upload-excel-hw {
+    font-size: 15px;
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper .form-upload-excel-hw .select2-selection--single:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper #table_result > thead > tr > th:first-child {
+    padding-left: 20px;
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper #table_result > thead > tr > th:last-child {
+    padding-right: 0px;
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper #table_result > thead > tr > th {
+    padding: 10px;
+    border-top: 1px solid #bbb
+}
+
+.content-wrapper.transaction-upload-excel-hw-wrapper .uploader .filename {
+    padding-right: 90px;
+}
+
+@media (max-width: 1200px) {
+    tbody td .truncate {
+        max-width: 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .panel-heading .form-group.action-btns.pull-right button {
+        width: inherit;
+        text-align: center;
+        padding: 7px 12px;
+    }
+}
+
+@media (min-width: 769px) {
+    .panel-transaction .panel-heading .select2-selection {
+        border: none !important;
+    }
+
+    .panel-heading .search-form-group {
+        width: 200px;
+    }
+
+    .panel-heading .form-inline .form-group .multiselect.dropdown-toggle.btn.btn-default {
+        border-width: 0;
+    }
+
+    .panel-heading .form-inline .form-group .multiselect-container {
+        border-top: 1px solid #ddd;
+    }
+
+    .panel-transaction .panel-heading #area_action.form-inline .form-group button:first-child {
+        margin-left: 20px;
+    }
+
+    .content-wrapper.transaction-upload-excel-hw-wrapper .form-upload-excel-hw .form-inline .form-group > label {
+        margin-right: 0px;
+    }
+
+    .content-wrapper.transaction-upload-excel-hw-wrapper .uploader {
+        width: 300px;
+    }
+
+    .content-wrapper.transaction-upload-excel-hw-wrapper .uploader.upload {
+        width: inherit;
+    }
+
+    .content-wrapper.transaction-upload-excel-hw-wrapper .form-upload-excel-hw .control-label {
+        text-align: right;
+    }
+}

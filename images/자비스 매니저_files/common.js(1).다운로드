@@ -1,0 +1,222 @@
+/**
+ *
+ * @param {string} api_type
+ * @description 거래내역 - 수기데이터 삭제
+ *
+ */
+function removeHw(api_type) {
+    if (uploading) return;
+
+    var sc_cnt = 0;
+    var hw_cnt = 0;
+    var chk = $('input[name=tx_hw_idx]:checked');
+    var idx = [];
+
+    for(var i = 0; i < chk.length; i++) {
+        if($(chk[i]).data('source') == "HW") {
+            hw_cnt += 1;
+            idx.push($(chk[i]).val())
+        } else if($(chk[i]).data('source') == "SC") {
+            sc_cnt += 1;
+        }
+    }
+
+    var msg = '';
+    if(hw_cnt == 0) {
+        swal("삭제불가", "자동수집 데이터는 삭제가 불가능합니다.", "error");
+    } else {
+        if(sc_cnt > 0) {
+            msg = "자동수집 데이터 '" + sc_cnt + "건'을 제외한 수기 데이터 '" + hw_cnt + "건'만 삭제됩니다.\n삭제하시겠습니까?";
+        } else {
+            msg = "수기 데이터 '" + hw_cnt + "건'이 삭제됩니다.\n삭제하시겠습니까?";
+        }
+
+        swal({
+            title: '수기 데이터 삭제',
+            text: msg,
+            showCancelButton: true,
+            cancelButtonText: "취소",
+            confirmButtonColor: "#4a90e2",
+            confirmButtonText: "네, 삭제하겠습니다.",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        }, function (isConfirm) {
+            if (isConfirm) {
+                uploading = true;
+                $.ajax({
+                    type: 'POST',
+                    url: '/transaction/' + api_type,
+                    data: {idx:idx},
+                    success: function (res) {
+                        uploading = false;
+
+                        setTimeout(function (){
+                            if (res.result==true) {
+                                swal({
+                                        title: "삭제",
+                                        text: "삭제되었습니다.",
+                                        type: 'success',
+                                        showCancelButton: false,
+                                        confirmButtonText: "확인"
+                                    },
+                                    function(isConfirm2) {
+                                        if (isConfirm2) {
+                                            location.reload();
+                                        }
+                                    });
+                            } else {
+                                swal("실패", "삭제가 실패되었습니다.", "error");
+                            }
+                        }, 50);
+                    },
+                    error: function (err) {
+                        uploading = false;
+                        console.log(err.responseText);
+                    }
+                });
+            }
+        });
+    }
+}
+
+/**
+ *
+ * @param {Object} targetTableInst(dataTable instance)
+ * @param {string} api_data_type
+ * @description 거래내역 - 일괄 카테고리 수정
+ *
+ */
+function bulk_category_update(targetTableInst, api_data_type) {
+    //todo: api_data_type에 따른 분기처리 //'hometax', 'bank', 'card', 'pg', 'van'
+
+    if (uploading) return;
+
+    var cate_idx = $('#select_bulk_category').val();
+
+    if (cate_idx == '') {
+        swal("변경불가", "변경할 카테고리를 선택해주세요.", "error");
+        return;
+    }
+
+    var chk = $('input[name=tx_hw_idx]:checked');
+    var inout_type_cd = '';
+    var tx_info = [];
+
+    if (chk.length>0) {
+        for (var i = 0; i < chk.length; i++) {
+            var tmp_tr = $(chk[i]).closest('tr');
+            var tmp_detail = targetTableInst.row(tmp_tr).data();
+            console.log(tmp_detail);
+
+            if (inout_type_cd == '') {
+                inout_type_cd = tmp_detail.inout_type_cd;
+            }
+            var tmp = {};
+            tmp.tx_idx = tmp_detail.tx_idx;
+
+            if(api_data_type == 'hometax' || api_data_type == 'card') {
+                tmp.client_reg_no = tmp_detail.client_reg_no;
+                tmp.client_name = tmp_detail.client_name;
+            } else if(api_data_type == 'bank') {
+                tmp.bank_summary = tmp_detail.histdt_3;
+            }
+
+            tx_info.push(tmp);
+        }
+    } else {
+        swal("변경불가", "변경할 거래내역을 선택해주세요.", "error");
+        return;
+    }
+
+    var data = {}
+    data.type = api_data_type;
+    data.tx_info = tx_info;
+    data.cate_idx = cate_idx;
+    data.inout_type_cd = inout_type_cd;
+
+    swal({
+        title: '일괄 카테고리 변경',
+        text: '\'' + $('#select_bulk_category').children("option:selected").text() + '\' (으)로 일괄변경 하시겠습니까?',
+        showCancelButton: true,
+        cancelButtonText: "아니요",
+        confirmButtonColor: "#4a90e2",
+        confirmButtonText: "네",
+        closeOnConfirm: true,
+        closeOnCancel: true
+    }, function (isConfirm) {
+        if (isConfirm) {
+            console.log(tx_info);
+            uploading = true;
+            $.ajax({
+                type: 'POST',
+                url: '/transaction/api_set_categories',
+                data: data,
+                success: function (res) {
+                    uploading = false;
+                    if (res.result==true) {
+                        swal({
+                                title: "일괄 카테고리 변경",
+                                text: res.msg,
+                                type: 'success',
+                                showCancelButton: false,
+                                confirmButtonText: "확인"
+                            },
+                            function(isConfirm2) {
+                                if (isConfirm2) {
+                                    location.reload();
+                                }
+                            });
+                    } else {
+                        swal("실패", res.msg, "error");
+                    }
+                },
+                error: function (err) {
+                    uploading = false;
+                    console.log(err.responseText);
+                }
+            });
+        }
+    });
+}
+
+/**
+ *
+ * @param {Object} targetTableInst(dataTable instance)
+ * @description 거래내역 - 일괄 카테고리 수정을 위한 체크사항
+ *
+ */
+function chk_bulk_category(targetTableInst){
+    var chk = $('input[name=tx_hw_idx]:checked');
+    var is_chk = true;
+    var inout_type_cd = '';
+    for(var i = 0; i < chk.length; i++) {
+        var tmp_tr = $(chk[i]).closest('tr');
+        var tmp_detail = targetTableInst.row(tmp_tr).data();
+
+        if (inout_type_cd=='') {
+            inout_type_cd = tmp_detail.inout_type_cd;
+        }
+
+        if (inout_type_cd!=tmp_detail.inout_type_cd){
+            is_chk = false;
+            break;
+        }
+    }
+
+    var selector = $('#select_bulk_category');
+    var html = '<option value="" selected>일괄 카테고리 선택</option>';
+
+    if(is_chk) {
+        selector.removeClass('disabled');
+
+        for (var i in data_category[inout_type_cd]) {
+            html += '<option value="' + data_category[inout_type_cd][i].cate_idx + '">' + data_category[inout_type_cd][i].cate_name + '</option>';
+        }
+    } else {
+        selector.addClass('disabled');
+    }
+
+    selector.empty();
+    selector.append(html);
+    selector.val('').trigger('change.select2');
+}
